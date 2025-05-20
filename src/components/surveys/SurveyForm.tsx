@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { RadioGroup, Radio } from '@/components/ui/radio-group';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
@@ -105,7 +105,7 @@ const SurveyForm: React.FC<SurveyFormProps> = ({
                 <div className="flex justify-between">
                   {[1, 2, 3, 4, 5].map((value) => (
                     <div key={value} className="flex flex-col items-center space-y-1">
-                      <Radio value={value.toString()} id={`rating-${value}`} className="scale-125" />
+                      <RadioGroupItem value={value.toString()} id={`rating-${value}`} className="scale-125" />
                       <Label htmlFor={`rating-${value}`} className="text-xs">{value}</Label>
                     </div>
                   ))}

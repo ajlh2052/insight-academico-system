@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/layout/Navbar';
@@ -123,12 +122,13 @@ const Surveys = () => {
     return matchesSearch && matchesStatus && matchesTab && matchesRole;
   });
 
+  // Update the type definition to match the Question interface in SurveyForm.tsx
   const sampleQuestions = [
-    { id: 1, text: "¿Cómo calificarías la calidad general del curso?", type: "rating" },
-    { id: 2, text: "¿El contenido del curso fue relevante y útil para tu formación?", type: "rating" },
-    { id: 3, text: "¿Los materiales didácticos fueron adecuados y de buena calidad?", type: "rating" },
-    { id: 4, text: "¿Las evaluaciones fueron justas y acordes al contenido?", type: "rating" },
-    { id: 5, text: "¿Qué aspectos del curso consideras que podrían mejorarse?", type: "text" },
+    { id: 1, text: "¿Cómo calificarías la calidad general del curso?", type: "rating" as "rating" },
+    { id: 2, text: "¿El contenido del curso fue relevante y útil para tu formación?", type: "rating" as "rating" },
+    { id: 3, text: "¿Los materiales didácticos fueron adecuados y de buena calidad?", type: "rating" as "rating" },
+    { id: 4, text: "¿Las evaluaciones fueron justas y acordes al contenido?", type: "rating" as "rating" },
+    { id: 5, text: "¿Qué aspectos del curso consideras que podrían mejorarse?", type: "text" as "text" },
   ];
 
   if (selectedSurvey) {

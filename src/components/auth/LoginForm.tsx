@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
-import { Radio, RadioGroup } from '@/components/ui/radio-group';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
@@ -80,11 +80,11 @@ const LoginForm = () => {
             <Label>Tipo de usuario</Label>
             <RadioGroup value={role} onValueChange={setRole} className="flex space-x-4">
               <div className="flex items-center space-x-2">
-                <Radio value="estudiante" id="estudiante" />
+                <RadioGroupItem value="estudiante" id="estudiante" />
                 <Label htmlFor="estudiante">Estudiante</Label>
               </div>
               <div className="flex items-center space-x-2">
-                <Radio value="docente" id="docente" />
+                <RadioGroupItem value="docente" id="docente" />
                 <Label htmlFor="docente">Docente</Label>
               </div>
             </RadioGroup>
