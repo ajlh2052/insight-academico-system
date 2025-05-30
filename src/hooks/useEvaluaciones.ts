@@ -77,7 +77,11 @@ export const useEvaluaciones = () => {
         throw error;
       }
 
-      setEvaluaciones(data || []);
+      // Type assertion para asegurar que los datos coincidan con nuestra interfaz
+      setEvaluaciones((data as any[])?.map(item => ({
+        ...item,
+        tipo_evaluacion: item.tipo_evaluacion as 'curso' | 'chef' | 'autoevaluacion'
+      })) || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al cargar evaluaciones');
     } finally {
@@ -96,7 +100,11 @@ export const useEvaluaciones = () => {
       throw error;
     }
 
-    return data || [];
+    // Type assertion para asegurar que los datos coincidan con nuestra interfaz
+    return (data as any[])?.map(item => ({
+      ...item,
+      tipo: item.tipo as 'rating' | 'text' | 'multiple_choice'
+    })) || [];
   };
 
   const submitRespuestas = async (
