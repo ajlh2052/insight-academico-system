@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { useAuth } from '@/hooks/useAuth';
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
@@ -15,16 +16,25 @@ const LoginForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { signIn } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Simulate login process
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const { data, error } = await signIn(email, password);
       
-      if (email && password) {
+      if (error) {
+        toast({
+          title: "Error de inicio de sesión",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (data.user) {
         // Store role in localStorage for demo purposes
         localStorage.setItem('userRole', role);
         localStorage.setItem('isLoggedIn', 'true');
@@ -35,14 +45,16 @@ const LoginForm = () => {
         });
         
         navigate('/dashboard');
-      } else {
-        toast({
-          title: "Error de inicio de sesión",
-          description: "Por favor verifica tus credenciales e intenta de nuevo.",
-          variant: "destructive",
-        });
       }
-    }, 1500);
+    } catch (error) {
+      toast({
+        title: "Error de inicio de sesión",
+        description: "Ocurrió un error inesperado. Inténtalo de nuevo.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -50,7 +62,7 @@ const LoginForm = () => {
       <CardHeader>
         <CardTitle className="text-2xl">Iniciar sesión</CardTitle>
         <CardDescription>
-          Ingresa tus credenciales para acceder al sistema
+          Ingresa tus credenciales para acceder al sistema de evaluaciones culinarias
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
@@ -84,8 +96,8 @@ const LoginForm = () => {
                 <Label htmlFor="estudiante">Estudiante</Label>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="docente" id="docente" />
-                <Label htmlFor="docente">Docente</Label>
+                <RadioGroupItem value="chef" id="chef" />
+                <Label htmlFor="chef">Chef/Instructor</Label>
               </div>
             </RadioGroup>
           </div>

@@ -9,7 +9,344 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      chefs: {
+        Row: {
+          apellido: string
+          biografia: string | null
+          certificaciones: string[] | null
+          created_at: string
+          especialidad: string
+          experiencia_anos: number | null
+          foto_url: string | null
+          id: string
+          nombre: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          apellido: string
+          biografia?: string | null
+          certificaciones?: string[] | null
+          created_at?: string
+          especialidad: string
+          experiencia_anos?: number | null
+          foto_url?: string | null
+          id?: string
+          nombre: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          apellido?: string
+          biografia?: string | null
+          certificaciones?: string[] | null
+          created_at?: string
+          especialidad?: string
+          experiencia_anos?: number | null
+          foto_url?: string | null
+          id?: string
+          nombre?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      cursos_culinarios: {
+        Row: {
+          activo: boolean
+          chef_id: string
+          codigo: string
+          created_at: string
+          cupo_maximo: number
+          descripcion: string | null
+          duracion_horas: number
+          fecha_fin: string | null
+          fecha_inicio: string | null
+          horario: string | null
+          id: string
+          modalidad: string
+          nivel: string
+          nombre: string
+          precio: number | null
+          updated_at: string
+        }
+        Insert: {
+          activo?: boolean
+          chef_id: string
+          codigo: string
+          created_at?: string
+          cupo_maximo?: number
+          descripcion?: string | null
+          duracion_horas: number
+          fecha_fin?: string | null
+          fecha_inicio?: string | null
+          horario?: string | null
+          id?: string
+          modalidad: string
+          nivel: string
+          nombre: string
+          precio?: number | null
+          updated_at?: string
+        }
+        Update: {
+          activo?: boolean
+          chef_id?: string
+          codigo?: string
+          created_at?: string
+          cupo_maximo?: number
+          descripcion?: string | null
+          duracion_horas?: number
+          fecha_fin?: string | null
+          fecha_inicio?: string | null
+          horario?: string | null
+          id?: string
+          modalidad?: string
+          nivel?: string
+          nombre?: string
+          precio?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cursos_culinarios_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      estudiantes: {
+        Row: {
+          apellido: string
+          created_at: string
+          email: string
+          fecha_nacimiento: string | null
+          id: string
+          intereses_culinarios: string[] | null
+          nivel_experiencia: string | null
+          nombre: string
+          telefono: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          apellido: string
+          created_at?: string
+          email: string
+          fecha_nacimiento?: string | null
+          id?: string
+          intereses_culinarios?: string[] | null
+          nivel_experiencia?: string | null
+          nombre: string
+          telefono?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          apellido?: string
+          created_at?: string
+          email?: string
+          fecha_nacimiento?: string | null
+          id?: string
+          intereses_culinarios?: string[] | null
+          nivel_experiencia?: string | null
+          nombre?: string
+          telefono?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      evaluaciones: {
+        Row: {
+          activa: boolean
+          chef_id: string | null
+          created_at: string
+          curso_id: string | null
+          descripcion: string | null
+          fecha_fin: string
+          fecha_inicio: string
+          id: string
+          tipo_evaluacion: string
+          titulo: string
+          updated_at: string
+        }
+        Insert: {
+          activa?: boolean
+          chef_id?: string | null
+          created_at?: string
+          curso_id?: string | null
+          descripcion?: string | null
+          fecha_fin: string
+          fecha_inicio: string
+          id?: string
+          tipo_evaluacion: string
+          titulo: string
+          updated_at?: string
+        }
+        Update: {
+          activa?: boolean
+          chef_id?: string | null
+          created_at?: string
+          curso_id?: string | null
+          descripcion?: string | null
+          fecha_fin?: string
+          fecha_inicio?: string
+          id?: string
+          tipo_evaluacion?: string
+          titulo?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evaluaciones_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evaluaciones_curso_id_fkey"
+            columns: ["curso_id"]
+            isOneToOne: false
+            referencedRelation: "cursos_culinarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inscripciones: {
+        Row: {
+          calificacion_final: number | null
+          curso_id: string
+          estado: string
+          estudiante_id: string
+          fecha_inscripcion: string
+          id: string
+        }
+        Insert: {
+          calificacion_final?: number | null
+          curso_id: string
+          estado?: string
+          estudiante_id: string
+          fecha_inscripcion?: string
+          id?: string
+        }
+        Update: {
+          calificacion_final?: number | null
+          curso_id?: string
+          estado?: string
+          estudiante_id?: string
+          fecha_inscripcion?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inscripciones_curso_id_fkey"
+            columns: ["curso_id"]
+            isOneToOne: false
+            referencedRelation: "cursos_culinarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inscripciones_estudiante_id_fkey"
+            columns: ["estudiante_id"]
+            isOneToOne: false
+            referencedRelation: "estudiantes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      preguntas: {
+        Row: {
+          evaluacion_id: string
+          id: string
+          obligatoria: boolean
+          opciones: string[] | null
+          orden: number
+          texto: string
+          tipo: string
+        }
+        Insert: {
+          evaluacion_id: string
+          id?: string
+          obligatoria?: boolean
+          opciones?: string[] | null
+          orden: number
+          texto: string
+          tipo: string
+        }
+        Update: {
+          evaluacion_id?: string
+          id?: string
+          obligatoria?: boolean
+          opciones?: string[] | null
+          orden?: number
+          texto?: string
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "preguntas_evaluacion_id_fkey"
+            columns: ["evaluacion_id"]
+            isOneToOne: false
+            referencedRelation: "evaluaciones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      respuestas_evaluacion: {
+        Row: {
+          created_at: string
+          estudiante_id: string
+          evaluacion_id: string
+          id: string
+          pregunta_id: string
+          respuesta_rating: number | null
+          respuesta_texto: string | null
+        }
+        Insert: {
+          created_at?: string
+          estudiante_id: string
+          evaluacion_id: string
+          id?: string
+          pregunta_id: string
+          respuesta_rating?: number | null
+          respuesta_texto?: string | null
+        }
+        Update: {
+          created_at?: string
+          estudiante_id?: string
+          evaluacion_id?: string
+          id?: string
+          pregunta_id?: string
+          respuesta_rating?: number | null
+          respuesta_texto?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "respuestas_evaluacion_estudiante_id_fkey"
+            columns: ["estudiante_id"]
+            isOneToOne: false
+            referencedRelation: "estudiantes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "respuestas_evaluacion_evaluacion_id_fkey"
+            columns: ["evaluacion_id"]
+            isOneToOne: false
+            referencedRelation: "evaluaciones"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "respuestas_evaluacion_pregunta_id_fkey"
+            columns: ["pregunta_id"]
+            isOneToOne: false
+            referencedRelation: "preguntas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
