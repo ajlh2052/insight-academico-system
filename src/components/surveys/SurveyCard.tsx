@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, Star } from 'lucide-react';
+import { Calendar, ChefHat, User, Star } from 'lucide-react';
 
 interface SurveyCardProps {
   id: string;
@@ -43,7 +43,7 @@ const SurveyCard: React.FC<SurveyCardProps> = ({
   const getTypeIcon = () => {
     switch (type) {
       case 'curso':
-        return <Book className="h-4 w-4" />;
+        return <ChefHat className="h-4 w-4" />;
       case 'docente':
         return <User className="h-4 w-4" />;
       case 'estudiante':
@@ -96,5 +96,4 @@ const SurveyCard: React.FC<SurveyCardProps> = ({
   );
 };
 
-import { Book, User } from 'lucide-react';
 export default SurveyCard;
