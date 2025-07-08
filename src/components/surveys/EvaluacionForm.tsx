@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { Evaluacion, Pregunta, useEvaluaciones } from '@/hooks/useEvaluaciones';
 
 interface EvaluacionFormProps {
@@ -33,6 +33,7 @@ const EvaluacionForm: React.FC<EvaluacionFormProps> = ({
         const preguntasData = await fetchPreguntasByEvaluacion(evaluacion.id);
         setPreguntas(preguntasData);
       } catch (error) {
+        console.error('Error loading preguntas:', error);
         toast({
           title: "Error",
           description: "No se pudieron cargar las preguntas de la evaluación.",
@@ -96,6 +97,7 @@ const EvaluacionForm: React.FC<EvaluacionFormProps> = ({
         navigate('/surveys');
       }
     } catch (error) {
+      console.error('Error submitting evaluation:', error);
       toast({
         title: "Error",
         description: "Hubo un problema al enviar tu evaluación. Inténtalo de nuevo.",

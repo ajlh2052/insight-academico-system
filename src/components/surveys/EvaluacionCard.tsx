@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -87,7 +86,7 @@ const EvaluacionCard: React.FC<EvaluacionCardProps> = ({
   };
 
   return (
-    <Card className="card-hover">
+    <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={handleClick}>
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
           <div className="flex items-center gap-2 mb-2">
@@ -117,7 +116,10 @@ const EvaluacionCard: React.FC<EvaluacionCardProps> = ({
       </CardContent>
       <CardFooter>
         <Button 
-          onClick={handleClick} 
+          onClick={(e) => {
+            e.stopPropagation();
+            handleClick();
+          }} 
           variant="outline"
           className="w-full"
           disabled={status === 'vencido' || status === 'proximamente'}

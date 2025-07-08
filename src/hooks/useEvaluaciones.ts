@@ -50,6 +50,10 @@ export const useEvaluaciones = () => {
   const fetchEvaluaciones = async () => {
     try {
       setLoading(true);
+      setError(null);
+      
+      console.log('Fetching evaluaciones from Supabase...');
+      
       const { data, error } = await supabase
         .from('evaluaciones')
         .select(`
@@ -74,8 +78,11 @@ export const useEvaluaciones = () => {
         .order('created_at', { ascending: false });
 
       if (error) {
+        console.error('Error fetching evaluaciones:', error);
         throw error;
       }
+
+      console.log('Fetched evaluaciones:', data);
 
       // Type assertion para asegurar que los datos coincidan con nuestra interfaz
       setEvaluaciones((data as any[])?.map(item => ({
@@ -83,6 +90,7 @@ export const useEvaluaciones = () => {
         tipo_evaluacion: item.tipo_evaluacion as 'curso' | 'chef' | 'autoevaluacion'
       })) || []);
     } catch (err) {
+      console.error('Error in fetchEvaluaciones:', err);
       setError(err instanceof Error ? err.message : 'Error al cargar evaluaciones');
     } finally {
       setLoading(false);
@@ -90,6 +98,8 @@ export const useEvaluaciones = () => {
   };
 
   const fetchPreguntasByEvaluacion = async (evaluacionId: string): Promise<Pregunta[]> => {
+    console.log('Fetching preguntas for evaluacion:', evaluacionId);
+    
     const { data, error } = await supabase
       .from('preguntas')
       .select('*')
@@ -97,8 +107,11 @@ export const useEvaluaciones = () => {
       .order('orden', { ascending: true });
 
     if (error) {
+      console.error('Error fetching preguntas:', error);
       throw error;
     }
+
+    console.log('Fetched preguntas:', data);
 
     // Type assertion para asegurar que los datos coincidan con nuestra interfaz
     return (data as any[])?.map(item => ({
@@ -112,6 +125,8 @@ export const useEvaluaciones = () => {
     estudianteId: string,
     respuestas: { pregunta_id: string; respuesta_texto?: string; respuesta_rating?: number }[]
   ) => {
+    console.log('Submitting respuestas:', { evaluacionId, estudianteId, respuestas });
+    
     const { error } = await supabase
       .from('respuestas_evaluacion')
       .upsert(
@@ -123,8 +138,11 @@ export const useEvaluaciones = () => {
       );
 
     if (error) {
+      console.error('Error submitting respuestas:', error);
       throw error;
     }
+
+    console.log('Respuestas submitted successfully');
   };
 
   useEffect(() => {
