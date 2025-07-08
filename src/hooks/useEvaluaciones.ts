@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -53,7 +52,6 @@ export const useEvaluaciones = () => {
       setError(null);
       
       console.log('=== DEBUGGING DATABASE CONNECTION ===');
-      console.log('Supabase URL:', supabase.supabaseUrl);
       console.log('Fetching evaluaciones from Supabase...');
       
       // Test database connection first
