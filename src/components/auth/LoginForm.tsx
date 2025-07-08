@@ -6,13 +6,11 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useAuth } from '@/hooks/useAuth';
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState('estudiante');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -35,13 +33,13 @@ const LoginForm = () => {
       }
 
       if (data.user) {
-        // Store role in localStorage for demo purposes
-        localStorage.setItem('userRole', role);
+        // Store default role as student
+        localStorage.setItem('userRole', 'estudiante');
         localStorage.setItem('isLoggedIn', 'true');
         
         toast({
           title: "Inicio de sesión exitoso",
-          description: `Bienvenido de nuevo, has ingresado como ${role}.`,
+          description: "Bienvenido de nuevo.",
         });
         
         navigate('/dashboard');
@@ -87,19 +85,6 @@ const LoginForm = () => {
               onChange={(e) => setPassword(e.target.value)}
               required
             />
-          </div>
-          <div className="space-y-2">
-            <Label>Tipo de usuario</Label>
-            <RadioGroup value={role} onValueChange={setRole} className="flex space-x-4">
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="estudiante" id="estudiante" />
-                <Label htmlFor="estudiante">Estudiante</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="chef" id="chef" />
-                <Label htmlFor="chef">Chef/Instructor</Label>
-              </div>
-            </RadioGroup>
           </div>
         </CardContent>
         <CardFooter>

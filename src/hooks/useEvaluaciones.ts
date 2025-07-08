@@ -54,6 +54,20 @@ export const useEvaluaciones = () => {
       
       console.log('Fetching evaluaciones from Supabase...');
       
+      // Primero intentemos obtener evaluaciones sin joins para ver si hay datos
+      const { data: basicData, error: basicError } = await supabase
+        .from('evaluaciones')
+        .select('*')
+        .eq('activa', true)
+        .order('created_at', { ascending: false });
+
+      console.log('Basic evaluaciones data:', basicData);
+      
+      if (basicError) {
+        console.error('Error fetching basic evaluaciones:', basicError);
+      }
+
+      // Ahora intentemos con los joins
       const { data, error } = await supabase
         .from('evaluaciones')
         .select(`
@@ -78,11 +92,20 @@ export const useEvaluaciones = () => {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error fetching evaluaciones:', error);
+        console.error('Error fetching evaluaciones with joins:', error);
+        // Si falla el join, usar los datos básicos
+        if (basicData) {
+          console.log('Using basic data due to join error');
+          setEvaluaciones(basicData.map(item => ({
+            ...item,
+            tipo_evaluacion: item.tipo_evaluacion as 'curso' | 'chef' | 'autoevaluacion'
+          })));
+          return;
+        }
         throw error;
       }
 
-      console.log('Fetched evaluaciones:', data);
+      console.log('Fetched evaluaciones with joins:', data);
 
       // Type assertion para asegurar que los datos coincidan con nuestra interfaz
       setEvaluaciones((data as any[])?.map(item => ({
