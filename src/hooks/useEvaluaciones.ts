@@ -52,23 +52,52 @@ export const useEvaluaciones = () => {
       setLoading(true);
       setError(null);
       
+      console.log('=== DEBUGGING DATABASE CONNECTION ===');
+      console.log('Supabase URL:', supabase.supabaseUrl);
       console.log('Fetching evaluaciones from Supabase...');
       
-      // Primero intentemos obtener evaluaciones sin joins para ver si hay datos
+      // Test database connection first
+      const { data: testData, error: testError } = await supabase
+        .from('evaluaciones')
+        .select('count', { count: 'exact' });
+      
+      console.log('Database connection test:', { testData, testError });
+      
+      // Check current user
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      console.log('Current user:', user?.id, userError);
+      
+      // Intentar obtener evaluaciones básicas primero
+      console.log('Fetching basic evaluaciones...');
       const { data: basicData, error: basicError } = await supabase
         .from('evaluaciones')
         .select('*')
-        .eq('activa', true)
         .order('created_at', { ascending: false });
 
-      console.log('Basic evaluaciones data:', basicData);
+      console.log('Basic evaluaciones result:', { 
+        count: basicData?.length || 0, 
+        data: basicData, 
+        error: basicError 
+      });
       
       if (basicError) {
         console.error('Error fetching basic evaluaciones:', basicError);
+        throw basicError;
       }
 
-      // Ahora intentemos con los joins
-      const { data, error } = await supabase
+      // Si tenemos datos básicos, usarlos
+      if (basicData && basicData.length > 0) {
+        console.log('Using basic data, found', basicData.length, 'evaluaciones');
+        setEvaluaciones(basicData.map(item => ({
+          ...item,
+          tipo_evaluacion: item.tipo_evaluacion as 'curso' | 'chef' | 'autoevaluacion'
+        })));
+        return;
+      }
+
+      // Si no hay datos básicos, intentar con joins
+      console.log('No basic data found, trying with joins...');
+      const { data: joinData, error: joinError } = await supabase
         .from('evaluaciones')
         .select(`
           *,
@@ -88,30 +117,25 @@ export const useEvaluaciones = () => {
             especialidad
           )
         `)
-        .eq('activa', true)
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching evaluaciones with joins:', error);
-        // Si falla el join, usar los datos básicos
-        if (basicData) {
-          console.log('Using basic data due to join error');
-          setEvaluaciones(basicData.map(item => ({
-            ...item,
-            tipo_evaluacion: item.tipo_evaluacion as 'curso' | 'chef' | 'autoevaluacion'
-          })));
-          return;
-        }
-        throw error;
+      console.log('Join data result:', { 
+        count: joinData?.length || 0, 
+        data: joinData, 
+        error: joinError 
+      });
+
+      if (joinError) {
+        console.error('Error fetching evaluaciones with joins:', joinError);
+        throw joinError;
       }
 
-      console.log('Fetched evaluaciones with joins:', data);
-
       // Type assertion para asegurar que los datos coincidan con nuestra interfaz
-      setEvaluaciones((data as any[])?.map(item => ({
+      setEvaluaciones((joinData as any[])?.map(item => ({
         ...item,
         tipo_evaluacion: item.tipo_evaluacion as 'curso' | 'chef' | 'autoevaluacion'
       })) || []);
+
     } catch (err) {
       console.error('Error in fetchEvaluaciones:', err);
       setError(err instanceof Error ? err.message : 'Error al cargar evaluaciones');
@@ -149,6 +173,30 @@ export const useEvaluaciones = () => {
     respuestas: { pregunta_id: string; respuesta_texto?: string; respuesta_rating?: number }[]
   ) => {
     console.log('Submitting respuestas:', { evaluacionId, estudianteId, respuestas });
+    
+    // Create a mock student entry if needed (for demo purposes)
+    const { data: existingStudent } = await supabase
+      .from('estudiantes')
+      .select('id')
+      .eq('id', estudianteId)
+      .single();
+    
+    if (!existingStudent) {
+      console.log('Creating mock student for demo');
+      const { error: studentError } = await supabase
+        .from('estudiantes')
+        .insert({
+          id: estudianteId,
+          user_id: estudianteId,
+          nombre: 'Usuario',
+          apellido: 'Demo',
+          email: 'demo@example.com'
+        });
+      
+      if (studentError) {
+        console.error('Error creating mock student:', studentError);
+      }
+    }
     
     const { error } = await supabase
       .from('respuestas_evaluacion')

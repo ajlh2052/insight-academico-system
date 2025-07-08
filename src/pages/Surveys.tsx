@@ -20,7 +20,7 @@ const Surveys = () => {
   const [selectedEvaluacion, setSelectedEvaluacion] = useState<Evaluacion | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { evaluaciones, loading, error } = useEvaluaciones();
+  const { evaluaciones, loading, error, refetch } = useEvaluaciones();
   const userRole = localStorage.getItem('userRole') || 'estudiante';
   const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
 
@@ -97,6 +97,7 @@ const Surveys = () => {
           <div className="max-w-7xl mx-auto">
             <div className="text-center py-12">
               <p className="text-lg">Cargando evaluaciones...</p>
+              <p className="text-sm text-gray-500 mt-2">Conectando con la base de datos...</p>
             </div>
           </div>
         </main>
@@ -112,7 +113,13 @@ const Surveys = () => {
         <main className="flex-grow bg-gray-50 py-8 px-4">
           <div className="max-w-7xl mx-auto">
             <div className="text-center py-12">
-              <p className="text-lg text-red-600">Error: {error}</p>
+              <p className="text-lg text-red-600 mb-4">Error: {error}</p>
+              <div className="space-y-2">
+                <p className="text-sm text-gray-600">Intentando reconectar con la base de datos...</p>
+                <Button onClick={refetch} variant="outline">
+                  Reintentar conexión
+                </Button>
+              </div>
             </div>
           </div>
         </main>
@@ -135,6 +142,11 @@ const Surveys = () => {
                   ? `Gestiona y completa tus evaluaciones de cursos culinarios y chefs.`
                   : 'Explora las evaluaciones disponibles. Inicia sesión para acceder a todas las funciones.'}
               </p>
+              {evaluaciones.length > 0 && (
+                <p className="text-sm text-green-600 mt-1">
+                  ✓ Conectado a la base de datos - {evaluaciones.length} evaluaciones encontradas
+                </p>
+              )}
             </div>
             
             {isLoggedIn && (
@@ -171,16 +183,21 @@ const Surveys = () => {
                     </SelectContent>
                   </Select>
                 </div>
+                <div>
+                  <Button onClick={refetch} variant="outline" className="w-full">
+                    Actualizar datos
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
           
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="mb-6">
-              <TabsTrigger value="all">Todas</TabsTrigger>
-              <TabsTrigger value="courses">Cursos</TabsTrigger>
-              <TabsTrigger value="teachers">Chefs</TabsTrigger>
-              <TabsTrigger value="students">Autoevaluación</TabsTrigger>
+              <TabsTrigger value="all">Todas ({evaluaciones.length})</TabsTrigger>
+              <TabsTrigger value="courses">Cursos ({evaluaciones.filter(e => e.tipo_evaluacion === 'curso').length})</TabsTrigger>
+              <TabsTrigger value="teachers">Chefs ({evaluaciones.filter(e => e.tipo_evaluacion === 'chef').length})</TabsTrigger>
+              <TabsTrigger value="students">Autoevaluación ({evaluaciones.filter(e => e.tipo_evaluacion === 'autoevaluacion').length})</TabsTrigger>
             </TabsList>
             
             <TabsContent value={activeTab} className="animate-fade-in">
@@ -194,9 +211,31 @@ const Surveys = () => {
                     />
                   ))}
                 </div>
+              ) : evaluaciones.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-lg text-gray-500 mb-4">
+                    No se encontraron evaluaciones en la base de datos.
+                  </p>
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 max-w-md mx-auto">
+                    <p className="text-sm text-yellow-800">
+                      <strong>Debug Info:</strong> La conexión a la base de datos está funcionando, 
+                      pero no se encontraron registros de evaluaciones.
+                    </p>
+                    <Button 
+                      onClick={refetch} 
+                      variant="outline" 
+                      size="sm" 
+                      className="mt-2"
+                    >
+                      Reintentar carga
+                    </Button>
+                  </div>
+                </div>
               ) : (
                 <div className="text-center py-12">
-                  <p className="text-lg text-gray-500">No se encontraron evaluaciones con los filtros seleccionados.</p>
+                  <p className="text-lg text-gray-500">
+                    No se encontraron evaluaciones con los filtros seleccionados.
+                  </p>
                 </div>
               )}
             </TabsContent>
