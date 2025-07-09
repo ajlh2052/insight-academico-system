@@ -96,6 +96,7 @@ const Surveys = () => {
         <main className="flex-grow bg-gray-50 py-8 px-4">
           <div className="max-w-7xl mx-auto">
             <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
               <p className="text-lg">Cargando evaluaciones...</p>
               <p className="text-sm text-gray-500 mt-2">Conectando con la base de datos...</p>
             </div>
@@ -113,9 +114,9 @@ const Surveys = () => {
         <main className="flex-grow bg-gray-50 py-8 px-4">
           <div className="max-w-7xl mx-auto">
             <div className="text-center py-12">
-              <p className="text-lg text-red-600 mb-4">Error: {error}</p>
-              <div className="space-y-2">
-                <p className="text-sm text-gray-600">Intentando reconectar con la base de datos...</p>
+              <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
+                <p className="text-lg text-red-600 mb-4">Error de conexión</p>
+                <p className="text-sm text-red-500 mb-4">{error}</p>
                 <Button onClick={refetch} variant="outline">
                   Reintentar conexión
                 </Button>
@@ -138,13 +139,13 @@ const Surveys = () => {
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">Evaluaciones Culinarias</h1>
               <p className="text-gray-600">
-                {isLoggedIn 
-                  ? `Gestiona y completa tus evaluaciones de cursos culinarios y chefs.`
-                  : 'Explora las evaluaciones disponibles. Inicia sesión para acceder a todas las funciones.'}
+                {evaluaciones.length > 0 
+                  ? `Tienes ${evaluaciones.length} evaluaciones disponibles para completar.`
+                  : 'Explora y completa las evaluaciones de cursos culinarios y chefs.'}
               </p>
               {evaluaciones.length > 0 && (
                 <p className="text-sm text-green-600 mt-1">
-                  ✓ Conectado a la base de datos - {evaluaciones.length} evaluaciones encontradas
+                  ✓ Base de datos conectada - {evaluaciones.length} evaluaciones cargadas
                 </p>
               )}
             </div>
@@ -156,41 +157,43 @@ const Surveys = () => {
             )}
           </div>
           
-          <Card className="mb-8">
-            <CardHeader className="pb-3">
-              <CardTitle>Filtros</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div>
-                  <Input
-                    placeholder="Buscar por título o código"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full"
-                  />
+          {evaluaciones.length > 0 && (
+            <Card className="mb-8">
+              <CardHeader className="pb-3">
+                <CardTitle>Filtros</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div>
+                    <Input
+                      placeholder="Buscar por título o código"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full"
+                    />
+                  </div>
+                  <div>
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Estado" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos los estados</SelectItem>
+                        <SelectItem value="pendiente">Pendientes</SelectItem>
+                        <SelectItem value="vencido">Vencidos</SelectItem>
+                        <SelectItem value="proximamente">Próximamente</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Button onClick={refetch} variant="outline" className="w-full">
+                      Actualizar datos
+                    </Button>
+                  </div>
                 </div>
-                <div>
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Estado" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todos los estados</SelectItem>
-                      <SelectItem value="pendiente">Pendientes</SelectItem>
-                      <SelectItem value="vencido">Vencidos</SelectItem>
-                      <SelectItem value="proximamente">Próximamente</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Button onClick={refetch} variant="outline" className="w-full">
-                    Actualizar datos
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          )}
           
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="mb-6">
@@ -213,29 +216,29 @@ const Surveys = () => {
                 </div>
               ) : evaluaciones.length === 0 ? (
                 <div className="text-center py-12">
-                  <p className="text-lg text-gray-500 mb-4">
-                    No se encontraron evaluaciones en la base de datos.
-                  </p>
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 max-w-md mx-auto">
-                    <p className="text-sm text-yellow-800">
-                      <strong>Debug Info:</strong> La conexión a la base de datos está funcionando, 
-                      pero no se encontraron registros de evaluaciones.
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-8 max-w-md mx-auto">
+                    <h3 className="text-lg font-semibold text-blue-900 mb-2">
+                      ¡Bienvenido a las Evaluaciones Culinarias!
+                    </h3>
+                    <p className="text-blue-700 mb-4">
+                      Las evaluaciones te permiten dar retroalimentación sobre cursos y chefs.
                     </p>
-                    <Button 
-                      onClick={refetch} 
-                      variant="outline" 
-                      size="sm" 
-                      className="mt-2"
-                    >
-                      Reintentar carga
+                    <Button onClick={refetch} className="mt-4">
+                      Cargar evaluaciones
                     </Button>
                   </div>
                 </div>
               ) : (
                 <div className="text-center py-12">
-                  <p className="text-lg text-gray-500">
+                  <p className="text-lg text-gray-500 mb-4">
                     No se encontraron evaluaciones con los filtros seleccionados.
                   </p>
+                  <Button onClick={() => {
+                    setSearchQuery('');
+                    setStatusFilter('all');
+                  }} variant="outline">
+                    Limpiar filtros
+                  </Button>
                 </div>
               )}
             </TabsContent>

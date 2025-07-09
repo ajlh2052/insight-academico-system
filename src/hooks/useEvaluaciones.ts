@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -51,51 +52,10 @@ export const useEvaluaciones = () => {
       setLoading(true);
       setError(null);
       
-      console.log('=== DEBUGGING DATABASE CONNECTION ===');
       console.log('Fetching evaluaciones from Supabase...');
       
-      // Test database connection first
-      const { data: testData, error: testError } = await supabase
-        .from('evaluaciones')
-        .select('count', { count: 'exact' });
-      
-      console.log('Database connection test:', { testData, testError });
-      
-      // Check current user
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      console.log('Current user:', user?.id, userError);
-      
-      // Intentar obtener evaluaciones básicas primero
-      console.log('Fetching basic evaluaciones...');
-      const { data: basicData, error: basicError } = await supabase
-        .from('evaluaciones')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      console.log('Basic evaluaciones result:', { 
-        count: basicData?.length || 0, 
-        data: basicData, 
-        error: basicError 
-      });
-      
-      if (basicError) {
-        console.error('Error fetching basic evaluaciones:', basicError);
-        throw basicError;
-      }
-
-      // Si tenemos datos básicos, usarlos
-      if (basicData && basicData.length > 0) {
-        console.log('Using basic data, found', basicData.length, 'evaluaciones');
-        setEvaluaciones(basicData.map(item => ({
-          ...item,
-          tipo_evaluacion: item.tipo_evaluacion as 'curso' | 'chef' | 'autoevaluacion'
-        })));
-        return;
-      }
-
-      // Si no hay datos básicos, intentar con joins
-      console.log('No basic data found, trying with joins...');
-      const { data: joinData, error: joinError } = await supabase
+      // Obtener evaluaciones con relaciones usando joins
+      const { data, error: fetchError } = await supabase
         .from('evaluaciones')
         .select(`
           *,
@@ -115,24 +75,23 @@ export const useEvaluaciones = () => {
             especialidad
           )
         `)
+        .eq('activa', true)
         .order('created_at', { ascending: false });
 
-      console.log('Join data result:', { 
-        count: joinData?.length || 0, 
-        data: joinData, 
-        error: joinError 
-      });
-
-      if (joinError) {
-        console.error('Error fetching evaluaciones with joins:', joinError);
-        throw joinError;
+      if (fetchError) {
+        console.error('Error fetching evaluaciones:', fetchError);
+        throw fetchError;
       }
 
+      console.log('Successfully fetched evaluaciones:', data?.length || 0);
+
       // Type assertion para asegurar que los datos coincidan con nuestra interfaz
-      setEvaluaciones((joinData as any[])?.map(item => ({
+      const evaluacionesFormateadas = (data as any[])?.map(item => ({
         ...item,
         tipo_evaluacion: item.tipo_evaluacion as 'curso' | 'chef' | 'autoevaluacion'
-      })) || []);
+      })) || [];
+
+      setEvaluaciones(evaluacionesFormateadas);
 
     } catch (err) {
       console.error('Error in fetchEvaluaciones:', err);
@@ -156,7 +115,7 @@ export const useEvaluaciones = () => {
       throw error;
     }
 
-    console.log('Fetched preguntas:', data);
+    console.log('Fetched preguntas:', data?.length || 0);
 
     // Type assertion para asegurar que los datos coincidan con nuestra interfaz
     return (data as any[])?.map(item => ({
@@ -172,7 +131,7 @@ export const useEvaluaciones = () => {
   ) => {
     console.log('Submitting respuestas:', { evaluacionId, estudianteId, respuestas });
     
-    // Create a mock student entry if needed (for demo purposes)
+    // Verificar si el estudiante existe, si no, crear uno de muestra
     const { data: existingStudent } = await supabase
       .from('estudiantes')
       .select('id')
@@ -193,6 +152,7 @@ export const useEvaluaciones = () => {
       
       if (studentError) {
         console.error('Error creating mock student:', studentError);
+        // Continuar de todos modos para propósitos de demostración
       }
     }
     
