@@ -10,12 +10,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/use-toast';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { useDashboardData } from '@/hooks/useDashboardData';
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const userRole = localStorage.getItem('userRole') || 'estudiante';
   const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+  const { evaluaciones, loading, error } = useDashboardData();
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -43,8 +45,88 @@ const Dashboard = () => {
     { name: 'Bio404', evaluacion: 4.8, promedio: 4.2 },
   ];
 
+  // Filtrar evaluaciones por estado
+  const evaluacionesPendientes = evaluaciones.filter(ev => ev.status === 'pendiente');
+  const evaluacionesCompletadas = evaluaciones.filter(ev => ev.status === 'completado');
+  const evaluacionesVencidas = evaluaciones.filter(ev => ev.status === 'vencido');
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('es-ES', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  };
+
+  const getDisplayName = (evaluacion: any) => {
+    if (evaluacion.tipo_evaluacion === 'curso' && evaluacion.curso_nombre) {
+      return evaluacion.curso_nombre;
+    } else if (evaluacion.tipo_evaluacion === 'chef' && evaluacion.chef_nombre) {
+      return `${evaluacion.chef_nombre} ${evaluacion.chef_apellido || ''}`.trim();
+    }
+    return 'Autoevaluación';
+  };
+
+  const getDisplayCode = (evaluacion: any) => {
+    if (evaluacion.tipo_evaluacion === 'curso' && evaluacion.curso_codigo) {
+      return evaluacion.curso_codigo;
+    } else if (evaluacion.tipo_evaluacion === 'chef') {
+      return 'CHEF';
+    }
+    return 'AUTO';
+  };
+
+  const getSurveyType = (tipoEvaluacion: string): "curso" | "docente" | "estudiante" => {
+    switch (tipoEvaluacion) {
+      case 'curso':
+        return 'curso';
+      case 'chef':
+        return 'docente';
+      case 'autoevaluacion':
+        return 'estudiante';
+      default:
+        return 'curso';
+    }
+  };
+
   if (!isLoggedIn) {
-    return null; // Don't render if not logged in
+    return null;
+  }
+
+  if (loading) {
+    return (
+      <div className="flex flex-col min-h-screen">
+        <Navbar />
+        <main className="flex-grow bg-gray-50 py-8 px-4">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-lg">Cargando datos del dashboard...</p>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col min-h-screen">
+        <Navbar />
+        <main className="flex-grow bg-gray-50 py-8 px-4">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center py-12">
+              <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
+                <p className="text-lg text-red-600 mb-4">Error al cargar datos</p>
+                <p className="text-sm text-red-500">{error}</p>
+              </div>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
   }
 
   return (
@@ -64,21 +146,21 @@ const Dashboard = () => {
             <TabsContent value="overview" className="mt-6 animate-fade-in">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <StatCard
-                  title={userRole === 'docente' ? 'Evaluaciones completadas' : 'Cursos aprobados'}
-                  value={userRole === 'docente' ? 8 : 4}
-                  maxValue={userRole === 'docente' ? 12 : 5}
+                  title={userRole === 'docente' ? 'Evaluaciones completadas' : 'Evaluaciones pendientes'}
+                  value={userRole === 'docente' ? evaluacionesCompletadas.length : evaluacionesPendientes.length}
+                  maxValue={evaluaciones.length || 1}
                 />
                 
                 <StatCard
-                  title="Asistencia"
-                  value={92}
-                  percentageText="92%"
+                  title="Total evaluaciones"
+                  value={evaluaciones.length}
+                  percentageText={`${evaluaciones.length} disponibles`}
                 />
                 
                 <StatCard
-                  title={userRole === 'docente' ? 'Calificación promedio' : 'Promedio académico'}
-                  value={userRole === 'docente' ? 4.8 : 4.2}
-                  maxValue={5}
+                  title="Evaluaciones vencidas"
+                  value={evaluacionesVencidas.length}
+                  maxValue={evaluaciones.length || 1}
                 />
               </div>
               
@@ -89,48 +171,23 @@ const Dashboard = () => {
                     <CardDescription>Evaluaciones que requieren tu atención</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    {userRole === 'docente' ? (
-                      <>
+                    {evaluacionesPendientes.length > 0 ? (
+                      evaluacionesPendientes.slice(0, 3).map((evaluacion) => (
                         <SurveyCard 
-                          id="1"
-                          title="Evaluación de desempeño estudiantil"
-                          courseCode="MAT101"
-                          courseName="Matemáticas Avanzadas"
-                          dueDate="28/05/2025"
+                          key={evaluacion.id}
+                          id={evaluacion.id}
+                          title={evaluacion.titulo}
+                          courseCode={getDisplayCode(evaluacion)}
+                          courseName={getDisplayName(evaluacion)}
+                          dueDate={formatDate(evaluacion.fecha_fin)}
                           status="pendiente"
-                          type="estudiante"
+                          type={getSurveyType(evaluacion.tipo_evaluacion)}
                         />
-                        <SurveyCard 
-                          id="2"
-                          title="Reporte de calificaciones finales"
-                          courseCode="FIS202"
-                          courseName="Física Cuántica"
-                          dueDate="30/05/2025"
-                          status="pendiente"
-                          type="estudiante"
-                        />
-                      </>
+                      ))
                     ) : (
-                      <>
-                        <SurveyCard 
-                          id="3"
-                          title="Evaluación del curso"
-                          courseCode="PROG303"
-                          courseName="Programación Avanzada"
-                          dueDate="25/05/2025"
-                          status="pendiente"
-                          type="curso"
-                        />
-                        <SurveyCard 
-                          id="4"
-                          title="Evaluación docente"
-                          courseCode="BIO404"
-                          courseName="Biología Molecular"
-                          dueDate="27/05/2025"
-                          status="pendiente"
-                          type="docente"
-                        />
-                      </>
+                      <p className="text-gray-500 text-center py-4">
+                        No hay evaluaciones pendientes
+                      </p>
                     )}
                   </CardContent>
                 </Card>
@@ -138,51 +195,26 @@ const Dashboard = () => {
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle>Evaluaciones recientes</CardTitle>
-                    <CardDescription>Últimas evaluaciones completadas</CardDescription>
+                    <CardDescription>Últimas evaluaciones disponibles</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    {userRole === 'docente' ? (
-                      <>
+                    {evaluaciones.length > 0 ? (
+                      evaluaciones.slice(0, 3).map((evaluacion) => (
                         <SurveyCard 
-                          id="5"
-                          title="Evaluación del curso"
-                          courseCode="PROG303"
-                          courseName="Programación Avanzada"
-                          dueDate="15/05/2025"
-                          status="completado"
-                          type="curso"
+                          key={evaluacion.id}
+                          id={evaluacion.id}
+                          title={evaluacion.titulo}
+                          courseCode={getDisplayCode(evaluacion)}
+                          courseName={getDisplayName(evaluacion)}
+                          dueDate={formatDate(evaluacion.fecha_fin)}
+                          status={evaluacion.status}
+                          type={getSurveyType(evaluacion.tipo_evaluacion)}
                         />
-                        <SurveyCard 
-                          id="6"
-                          title="Retroalimentación estudiantil"
-                          courseCode="BIO404"
-                          courseName="Biología Molecular"
-                          dueDate="10/05/2025"
-                          status="completado"
-                          type="estudiante"
-                        />
-                      </>
+                      ))
                     ) : (
-                      <>
-                        <SurveyCard 
-                          id="7"
-                          title="Evaluación docente"
-                          courseCode="MAT101"
-                          courseName="Matemáticas Avanzadas"
-                          dueDate="12/05/2025"
-                          status="completado"
-                          type="docente"
-                        />
-                        <SurveyCard 
-                          id="8"
-                          title="Evaluación del curso"
-                          courseCode="HIS505"
-                          courseName="Historia Contemporánea"
-                          dueDate="05/05/2025"
-                          status="vencido"
-                          type="curso"
-                        />
-                      </>
+                      <p className="text-gray-500 text-center py-4">
+                        No hay evaluaciones disponibles
+                      </p>
                     )}
                   </CardContent>
                 </Card>

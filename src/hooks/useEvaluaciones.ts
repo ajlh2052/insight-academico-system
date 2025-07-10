@@ -54,6 +54,14 @@ export const useEvaluaciones = () => {
       
       console.log('Fetching evaluaciones from Supabase...');
       
+      // Primero verificar conexión básica
+      const { data: testData, error: testError } = await supabase
+        .from('evaluaciones')
+        .select('count(*)')
+        .single();
+      
+      console.log('Connection test result:', { testData, testError });
+      
       // Obtener evaluaciones con relaciones usando joins
       const { data, error: fetchError } = await supabase
         .from('evaluaciones')
@@ -83,14 +91,19 @@ export const useEvaluaciones = () => {
         throw fetchError;
       }
 
+      console.log('Raw data from Supabase:', data);
       console.log('Successfully fetched evaluaciones:', data?.length || 0);
 
       // Type assertion para asegurar que los datos coincidan con nuestra interfaz
-      const evaluacionesFormateadas = (data as any[])?.map(item => ({
-        ...item,
-        tipo_evaluacion: item.tipo_evaluacion as 'curso' | 'chef' | 'autoevaluacion'
-      })) || [];
+      const evaluacionesFormateadas = (data as any[])?.map(item => {
+        console.log('Processing evaluacion:', item.titulo, item);
+        return {
+          ...item,
+          tipo_evaluacion: item.tipo_evaluacion as 'curso' | 'chef' | 'autoevaluacion'
+        };
+      }) || [];
 
+      console.log('Formatted evaluaciones:', evaluacionesFormateadas);
       setEvaluaciones(evaluacionesFormateadas);
 
     } catch (err) {
