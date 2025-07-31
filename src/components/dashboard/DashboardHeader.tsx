@@ -34,7 +34,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ userType, userName = 
           </div>
           <div>
             <div className="text-sm text-gray-500">Evaluaciones</div>
-            <div className="text-xl font-bold">{userType === 'docente' ? '12' : '8'}</div>
+            <div className="text-xl font-bold">{userType === 'docente' ? '12' : '1'}</div>
           </div>
         </div>
         
