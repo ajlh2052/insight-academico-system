@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/layout/Navbar';
@@ -11,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/use-toast';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { useDashboardData } from '@/hooks/useDashboardData';
+import { useEvaluacionStats } from '@/hooks/useEvaluacionStats';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -18,6 +18,7 @@ const Dashboard = () => {
   const userRole = localStorage.getItem('userRole') || 'estudiante';
   const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
   const { evaluaciones, loading, error } = useDashboardData();
+  const { courseStats, loading: statsLoading, error: statsError } = useEvaluacionStats();
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -227,37 +228,58 @@ const Dashboard = () => {
                   <CardTitle>
                     {userRole === 'docente' 
                       ? 'Evaluaciones de cursos por materia'
-                      : 'Desempeño académico por curso'}
+                      : 'Calificaciones de cursos por promedio'}
                   </CardTitle>
                   <CardDescription>
                     {userRole === 'docente'
-                      ? 'Comparativa de tus evaluaciones frente al promedio institucional'
-                      : 'Comparativa de tus calificaciones frente al promedio del curso'}
+                      ? 'Comparativa de evaluaciones de tus cursos'
+                      : 'Evaluaciones promedio de cursos culinarios completados'}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={userRole === 'docente' ? teacherChartData : studentChartData}
-                      margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis domain={userRole === 'docente' ? [0, 5] : [0, 100]} />
-                      <Tooltip />
-                      <Legend />
-                      <Bar
-                        dataKey={userRole === 'docente' ? 'evaluacion' : 'calificacion'}
-                        name={userRole === 'docente' ? 'Tu evaluación' : 'Tu calificación'}
-                        fill="hsl(var(--primary))"
-                      />
-                      <Bar
-                        dataKey="promedio"
-                        name="Promedio"
-                        fill="hsl(var(--secondary))"
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
+                  {statsLoading ? (
+                    <div className="flex items-center justify-center h-full">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                      <span className="ml-2">Cargando estadísticas...</span>
+                    </div>
+                  ) : statsError ? (
+                    <div className="flex items-center justify-center h-full">
+                      <div className="text-center text-red-600">
+                        <p>Error al cargar estadísticas</p>
+                        <p className="text-sm">{statsError}</p>
+                      </div>
+                    </div>
+                  ) : courseStats.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={courseStats}
+                        margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" />
+                        <YAxis domain={[0, 5]} />
+                        <Tooltip />
+                        <Legend />
+                        <Bar
+                          dataKey="evaluacion"
+                          name="Calificación del curso"
+                          fill="hsl(var(--primary))"
+                        />
+                        <Bar
+                          dataKey="promedio"
+                          name="Promedio general"
+                          fill="hsl(var(--secondary))"
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="flex items-center justify-center h-full">
+                      <div className="text-center text-gray-500">
+                        <p>No hay estadísticas disponibles</p>
+                        <p className="text-sm">Complete algunas evaluaciones para ver los datos</p>
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>

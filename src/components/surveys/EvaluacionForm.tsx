@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -67,7 +66,25 @@ const EvaluacionForm: React.FC<EvaluacionFormProps> = ({
     setIsSubmitting(true);
     
     try {
-      // Convert answers to the format expected by the API
+      console.log('Submitting evaluation responses...');
+      console.log('Answers:', answers);
+      
+      // Validar que todas las preguntas obligatorias estén respondidas
+      const unansweredRequired = preguntas.filter(p => 
+        p.obligatoria && (!answers[p.id] || answers[p.id].trim() === '')
+      );
+      
+      if (unansweredRequired.length > 0) {
+        toast({
+          title: "Respuestas faltantes",
+          description: "Por favor responde todas las preguntas obligatorias antes de enviar.",
+          variant: "destructive",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Convertir respuestas al formato esperado por la API
       const respuestas = Object.entries(answers).map(([preguntaId, valor]) => {
         const pregunta = preguntas.find(p => p.id === preguntaId);
         if (pregunta?.tipo === 'rating') {
@@ -83,12 +100,19 @@ const EvaluacionForm: React.FC<EvaluacionFormProps> = ({
         }
       });
 
-      // For now, using a mock student ID - in real app this would come from auth
-      await submitRespuestas(evaluacion.id, 'mock-student-id', respuestas);
+      console.log('Formatted responses:', respuestas);
+
+      // Generar ID de estudiante basado en localStorage o crear uno temporal
+      const userId = localStorage.getItem('userId') || 'demo-user-' + Date.now();
+      const estudianteId = 'student-' + userId;
+
+      await submitRespuestas(evaluacion.id, estudianteId, respuestas);
+      
+      console.log('Evaluation submitted successfully');
       
       toast({
-        title: "Evaluación completada",
-        description: "Tu retroalimentación ha sido enviada con éxito.",
+        title: "✅ Evaluación completada",
+        description: "Tu retroalimentación ha sido enviada con éxito y guardada en la base de datos.",
       });
       
       if (onComplete) {
@@ -211,8 +235,9 @@ const EvaluacionForm: React.FC<EvaluacionFormProps> = ({
           <Button 
             onClick={handleSubmit} 
             disabled={isSubmitting || !answers[currentQuestion?.id]}
+            className="bg-green-600 hover:bg-green-700"
           >
-            {isSubmitting ? "Enviando..." : "Finalizar"}
+            {isSubmitting ? "Guardando en BD..." : "✅ Finalizar y Guardar"}
           </Button>
         ) : (
           <Button 
