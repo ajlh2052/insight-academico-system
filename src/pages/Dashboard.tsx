@@ -136,7 +136,7 @@ const Dashboard = () => {
       
       <main className="flex-grow bg-gray-50 py-8 px-4">
         <div className="max-w-7xl mx-auto">
-          <DashboardHeader userType={userRole} userName={userRole === 'docente' ? 'Prof. López' : 'Alex Rodríguez'} />
+          <DashboardHeader userType={userRole} userName={userRole === 'docente' ? 'Prof. Hernandez' : 'Pedro Hernandez'} />
           
           <Tabs defaultValue="overview" className="mb-8">
             <TabsList className="grid w-full max-w-md grid-cols-2">
