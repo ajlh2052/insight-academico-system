@@ -35,8 +35,7 @@ const Dashboard = () => {
     { name: 'Mat101', calificacion: 85, promedio: 78 },
     { name: 'Fis202', calificacion: 72, promedio: 75 },
     { name: 'Prog303', calificacion: 90, promedio: 82 },
-    { name: 'Bio404', calificacion: 88, promedio: 80 },
-    { name: 'His505', calificacion: 76, promedio: 72 },
+   
   ];
 
   const teacherChartData = [
